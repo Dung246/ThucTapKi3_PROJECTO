@@ -1,0 +1,58 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: sales_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sales_db
+      MYSQL_ROOT_PASSWORD: "123456"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sales_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Overrides application.properties' localhost:3307 datasource: inside the compose network,
+      # MySQL is reached by service name "mysql" on its container-internal port 3306 (not the
+      # 3307 host mapping, which only exists for connections from outside Docker). Env vars take
+      # precedence over application.properties, so ./gradlew bootRun on the host is unaffected.
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sales_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "123456"
+      # Overrides application.properties' relative "uploads" dir (which resolves against whatever
+      # the JVM's working directory happens to be) with a fixed absolute path backed by the
+      # product_images named volume below, so uploaded files survive container recreates.
+      APP_UPLOAD_DIR: /app/uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - product_images:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sales_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  mysql_data:
+  product_images:

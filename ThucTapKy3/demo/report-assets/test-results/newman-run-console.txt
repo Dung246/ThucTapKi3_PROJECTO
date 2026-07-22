@@ -1,0 +1,457 @@
+(node:29972) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+newman
+
+Sales Management System
+
+□ Auth
+└ Register - Success
+  POST http://localhost:8080/api/auth/register [201 Created, 768B, 101ms]
+  √  Status is 201
+  √  Response has token and CUSTOMER role
+
+└ Register - Duplicate Email (expect 409)
+  POST http://localhost:8080/api/auth/register [409 Conflict, 565B, 18ms]
+  √  Status is 409
+  √  Error message mentions existing email
+
+└ Login - Success
+  POST http://localhost:8080/api/auth/login [200 OK, 763B, 65ms]
+  √  Status is 200
+  √  Response has a JWT token
+
+└ Login - Wrong Password (expect 401)
+  POST http://localhost:8080/api/auth/login [401 Unauthorized, 530B, 65ms]
+  √  Status is 401
+  √  Error message is Invalid email or password
+
+└ Register - Locked Test Account (setup)
+  POST http://localhost:8080/api/auth/register [201 Created, 767B, 71ms]
+  √  Status is 201
+
+└ Login - Locked Account (expect 403)
+  POST http://localhost:8080/api/auth/login [200 OK, 762B, 66ms]
+  1. Status is 403
+  2. Error message mentions locked account
+
+□ Category
+└ List Categories (Public)
+  GET http://localhost:8080/api/categories [200 OK, 641B, 9ms]
+  √  Status is 200 without any auth header
+  √  Response is an array
+
+└ Create Category - No Token (expect 401)
+  POST http://localhost:8080/api/categories [401 Unauthorized, 556B, 9ms]
+  √  Status is 401
+
+└ Create Category - Customer Token (expect 403)
+  POST http://localhost:8080/api/categories [403 Forbidden, 563B, 5ms]
+  √  Status is 403 (CUSTOMER cannot manage categories per SRS 2.5.1)
+
+└ Create Category - Admin
+  POST http://localhost:8080/api/categories [201 Created, 481B, 15ms]
+  √  Status is 201
+  √  Response has id and name, saved as categoryId
+
+└ Get Category By Id
+  GET http://localhost:8080/api/categories/4 [200 OK, 468B, 10ms]
+  √  Status is 200
+
+└ Update Category - Admin
+  PUT http://localhost:8080/api/categories/4 [200 OK, 479B, 89ms]
+  √  Status is 200
+  √  Name was updated
+
+└ Delete Category - Blocked By Products (expect 409)
+  DELETE http://localhost:8080/api/categories/4 [204 No Content, 371B, 20ms]
+  3. Status is 409 when the category still has products
+
+└ Delete Category - Admin (expect 204)
+  DELETE http://localhost:8080/api/categories/4 [404 Not Found, 530B, 9ms]
+  4. Status is 204
+
+□ Product
+└ Create Category For Products (setup)
+  POST http://localhost:8080/api/categories [201 Created, 480B, 15ms]
+  √  Status is 201
+
+└ Create Product - No Token (expect 401)
+  POST http://localhost:8080/api/products [401 Unauthorized, 556B, 5ms]
+  √  Status is 401
+
+└ Create Product - Customer Token (expect 403)
+  POST http://localhost:8080/api/products [403 Forbidden, 563B, 6ms]
+  √  Status is 403 (CUSTOMER cannot manage products per SRS 2.5.1)
+
+└ Create Product - Admin (Product 1)
+  POST http://localhost:8080/api/products [201 Created, 592B, 20ms]
+  √  Status is 201
+  √  Response has id and ACTIVE status, saved as productId
+
+└ Create Product - Duplicate Name (expect 409)
+  POST http://localhost:8080/api/products [409 Conflict, 551B, 9ms]
+  √  Status is 409
+  √  Error message mentions duplicate name
+
+└ Create Product To Delete (setup)
+  POST http://localhost:8080/api/products [201 Created, 583B, 28ms]
+  √  Status is 201
+
+└ Search Products - By Name
+  GET http://localhost:8080/api/products?name=iphone [200 OK, 1.09kB, 14ms]
+  √  Status is 200
+  √  Finds the iPhone product by case-insensitive partial name
+
+└ Search Products - By Category And Price Range
+  GET http://localhost:8080/api/products?categoryId=5&minPrice=500&maxPrice=1500 [200 OK, 898B, 14ms]
+  √  Status is 200
+  √  All results are within the price range and category
+
+└ Search Products - Pagination
+  GET http://localhost:8080/api/products?size=1&page=0 [200 OK, 922B, 15ms]
+  √  Status is 200
+  √  Page size is respected
+
+└ Get Product By Id
+  GET http://localhost:8080/api/products/8 [200 OK, 580B, 10ms]
+  √  Status is 200
+
+└ Update Product - Admin
+  PUT http://localhost:8080/api/products/8 [200 OK, 592B, 24ms]
+  √  Status is 200
+  √  Price was updated
+
+└ Delete Product - Admin (Soft Delete, expect 204)
+  DELETE http://localhost:8080/api/products/9 [204 No Content, 371B, 13ms]
+  √  Status is 204
+
+└ Get Product By Id After Soft Delete (expect 404)
+  GET http://localhost:8080/api/products/9 [404 Not Found, 529B, 10ms]
+  √  Status is 404 (soft-deleted products are hidden from customer view)
+
+└ Search Products - Soft Deleted Not In Results
+  GET http://localhost:8080/api/products?name=Old%20Phone%20Postman [200 OK, 733B, 12ms]
+  √  Status is 200
+  √  Soft-deleted product does not appear in search results
+
+□ Cart
+└ Add To Cart - No Token (expect 401)
+  POST http://localhost:8080/api/cart [401 Unauthorized, 556B, 4ms]
+  √  Status is 401
+
+└ Add To Cart - Admin Token (expect 403)
+  POST http://localhost:8080/api/cart [403 Forbidden, 563B, 6ms]
+  √  Status is 403 (cart is CUSTOMER-only per SRS 2.5.1)
+
+└ Add To Cart - Success
+  POST http://localhost:8080/api/cart [201 Created, 536B, 20ms]
+  √  Status is 201
+  √  Quantity is 2, saved as cartItemId
+
+└ Add To Cart - Same Product Merges Quantity
+  POST http://localhost:8080/api/cart [201 Created, 536B, 22ms]
+  √  Status is 201
+  √  Quantity merged to 4 (same cart item, not a new one)
+
+└ Update Cart Item - Success
+  PUT http://localhost:8080/api/cart/5 [200 OK, 524B, 26ms]
+  √  Status is 200
+  √  Quantity is 3
+
+└ Update Cart Item - Capped At Stock (product has 5 in stock)
+  PUT http://localhost:8080/api/cart/5 [200 OK, 524B, 17ms]
+  √  Status is 200
+  √  Quantity capped at available stock (5), not 999
+
+└ Get Cart
+  GET http://localhost:8080/api/cart [200 OK, 558B, 11ms]
+  √  Status is 200
+  √  Cart contains the item with correct total
+
+└ Register - Second Customer (setup)
+  POST http://localhost:8080/api/auth/register [201 Created, 773B, 73ms]
+  √  Status is 201
+
+└ Login - Second Customer (setup)
+  POST http://localhost:8080/api/auth/login [200 OK, 768B, 74ms]
+  √  Status is 200
+
+└ Update Cart Item - Cross User (expect 404)
+  PUT http://localhost:8080/api/cart/5 [404 Not Found, 531B, 9ms]
+  √  Status is 404 (item belongs to a different user, treated as not found)
+
+└ Delete Cart Item - Cross User (expect 404)
+  DELETE http://localhost:8080/api/cart/5 [404 Not Found, 531B, 8ms]
+  √  Status is 404 (no cross-user access)
+
+└ Delete Cart Item - Success
+  DELETE http://localhost:8080/api/cart/5 [204 No Content, 371B, 15ms]
+  √  Status is 204
+
+└ Get Cart After Removal
+  GET http://localhost:8080/api/cart [200 OK, 443B, 8ms]
+  √  Status is 200
+  √  Cart is empty
+
+□ Order
+└ Create Product For Order Test (setup)
+  POST http://localhost:8080/api/products [201 Created, 585B, 15ms]
+  √  Status is 201
+
+└ Add To Cart For Order 1 (setup)
+  POST http://localhost:8080/api/cart [201 Created, 536B, 26ms]
+  √  Status is 201
+
+└ Create Order - No Token (expect 401)
+  POST http://localhost:8080/api/orders [401 Unauthorized, 556B, 3ms]
+  √  Status is 401
+
+└ Create Order 1 - Success (from cart)
+  POST http://localhost:8080/api/orders [201 Created, 747B, 26ms]
+  √  Status is 201
+  √  PENDING, correct total, has line items, saved as orderId
+
+└ Get Cart After Order (expect empty)
+  GET http://localhost:8080/api/cart [200 OK, 443B, 8ms]
+  √  Status is 200
+  √  Cart was cleared by order creation
+
+└ Create Order - Empty Cart (expect 400)
+  POST http://localhost:8080/api/orders [400 Bad Request, 523B, 10ms]
+  √  Status is 400 (cart is empty right after Order 1 cleared it)
+
+└ Get Order By Id - Owner
+  GET http://localhost:8080/api/orders/4 [200 OK, 857B, 18ms]
+  √  Status is 200
+
+└ Get Order By Id - Cross User (expect 404)
+  GET http://localhost:8080/api/orders/4 [404 Not Found, 527B, 9ms]
+  √  Status is 404 (order belongs to a different customer)
+
+└ Get Orders - Customer Own List
+  GET http://localhost:8080/api/orders [200 OK, 734B, 12ms]
+  √  Status is 200
+  √  List contains orderId
+
+└ Update Order Status - No Token (expect 401)
+  PATCH http://localhost:8080/api/orders/4/status [401 Unauthorized, 556B, 3ms]
+  √  Status is 401
+
+└ Update Order Status - Customer Forbidden (expect 403)
+  PATCH http://localhost:8080/api/orders/4/status [403 Forbidden, 563B, 4ms]
+  √  Status is 403 (only Staff/Admin manage order status per SRS 2.5.1)
+
+└ Update Order Status - Invalid Skip PENDING to COMPLETED (expect 409)
+  PATCH http://localhost:8080/api/orders/4/status [409 Conflict, 557B, 11ms]
+  √  Status is 409 (no skipping states per Hinh 2.4)
+
+└ Update Order Status - PENDING to CONFIRMED (Admin)
+  PATCH http://localhost:8080/api/orders/4/status [200 OK, 1kB, 24ms]
+  √  Status is 200 and CONFIRMED
+
+└ Update Order Status - CONFIRMED to SHIPPING (Admin)
+  PATCH http://localhost:8080/api/orders/4/status [200 OK, 1.14kB, 23ms]
+  √  Status is 200 and SHIPPING
+
+└ Update Order Status - SHIPPING to COMPLETED (Admin)
+  PATCH http://localhost:8080/api/orders/4/status [200 OK, 1.28kB, 29ms]
+  √  Status is 200, COMPLETED, and full history recorded (create + 3 transitions)
+
+└ Update Order Status - Cancel After COMPLETED (expect 409)
+  PATCH http://localhost:8080/api/orders/4/status [409 Conflict, 559B, 9ms]
+  √  Status is 409 (COMPLETED is terminal, UC-10 exception flow)
+
+└ Add To Cart For Order 2 (setup)
+  POST http://localhost:8080/api/cart [201 Created, 535B, 34ms]
+  √  Status is 201
+
+└ Create Order 2 - Success (for cancel-with-note test)
+  POST http://localhost:8080/api/orders [201 Created, 756B, 26ms]
+  √  Status is 201, saved as orderId2
+
+└ Order 2: CONFIRMED then SHIPPING (setup)
+  PATCH http://localhost:8080/api/orders/5/status [200 OK, 1.01kB, 28ms]
+  √  Status is 200
+
+└ Order 2: to SHIPPING (setup)
+  PATCH http://localhost:8080/api/orders/5/status [200 OK, 1.15kB, 24ms]
+  √  Status is 200
+
+└ Update Order Status - SHIPPING to CANCELLED No Note (expect 400)
+  PATCH http://localhost:8080/api/orders/5/status [400 Bad Request, 565B, 9ms]
+  √  Status is 400 (note required for a SHIPPING->CANCELLED delivery failure, Hinh 2.4)
+
+└ Update Order Status - SHIPPING to CANCELLED With Note (expect 200)
+  PATCH http://localhost:8080/api/orders/5/status [200 OK, 1.32kB, 37ms]
+  √  Status is 200 and CANCELLED
+
+└ Create Low-Stock Product (setup)
+  POST http://localhost:8080/api/products [201 Created, 589B, 27ms]
+  √  Status is 201
+
+└ Add Low-Stock Product To Cust2 Cart (setup)
+  POST http://localhost:8080/api/cart [201 Created, 540B, 16ms]
+  √  Status is 201
+
+└ Force Stock To Zero Via Admin Update (setup)
+  PUT http://localhost:8080/api/products/11 [200 OK, 577B, 29ms]
+  √  Status is 200 and quantity is 0
+
+└ Create Order - Reject Out Of Stock At Checkout (expect 409)
+  POST http://localhost:8080/api/orders [409 Conflict, 580B, 13ms]
+  √  Status is 409 and names the unavailable product
+
+└ Get Cart After Rejected Order (item still present, rollback check)
+  GET http://localhost:8080/api/cart [200 OK, 560B, 10ms]
+  √  Status is 200
+  √  Cart still has the item - nothing was committed
+
+□ Admin/Accounts
+└ List Customers - No Token (expect 401)
+  GET http://localhost:8080/api/admin/customers [401 Unauthorized, 556B, 3ms]
+  √  Status is 401
+
+└ List Customers - Admin
+  GET http://localhost:8080/api/admin/customers [200 OK, 1.42kB, 13ms]
+  √  Status is 200, only CUSTOMER role accounts
+
+└ Lock Customer - Admin
+  PATCH http://localhost:8080/api/admin/customers/6/status [200 OK, 585B, 20ms]
+  √  Status is 200 and LOCKED
+
+└ Login Locked Customer (expect 403)
+  POST http://localhost:8080/api/auth/login [403 Forbidden, 557B, 8ms]
+  √  Status is 403
+
+└ Unlock Customer - Admin
+  PATCH http://localhost:8080/api/admin/customers/6/status [200 OK, 585B, 15ms]
+  √  Status is 200 and ACTIVE
+
+└ Login Unlocked Customer (expect 200)
+  POST http://localhost:8080/api/auth/login [200 OK, 763B, 64ms]
+  √  Status is 200
+
+└ Create Staff - Customer Token (expect 403)
+  POST http://localhost:8080/api/admin/staff [403 Forbidden, 563B, 5ms]
+  √  Status is 403 (staff provisioning is ADMIN only)
+
+└ Create Staff - Invalid Role CUSTOMER (expect 400)
+  POST http://localhost:8080/api/admin/staff [400 Bad Request, 502B, 8ms]
+  √  Status is 400 (role must be STAFF or ADMIN)
+
+└ Create Staff - Admin
+  POST http://localhost:8080/api/admin/staff [201 Created, 583B, 75ms]
+  √  Status is 201 and role is STAFF
+
+└ Login - Staff (setup)
+  POST http://localhost:8080/api/auth/login [200 OK, 746B, 64ms]
+  √  Status is 200
+
+└ List Staff - Admin
+  GET http://localhost:8080/api/admin/staff [200 OK, 910B, 10ms]
+  √  Status is 200, only STAFF/ADMIN accounts
+
+└ Staff Blocked From List Customers (expect 403)
+  GET http://localhost:8080/api/admin/customers [403 Forbidden, 563B, 3ms]
+  √  Status is 403 (Staff cannot manage customers per SRS 2.5.1)
+
+└ Staff Blocked From Creating Staff (expect 403)
+  POST http://localhost:8080/api/admin/staff [403 Forbidden, 563B, 4ms]
+  √  Status is 403 (Staff cannot provision accounts)
+
+└ Staff Can List Orders (expect 200)
+  GET http://localhost:8080/api/orders [200 OK, 2.33kB, 18ms]
+  √  Status is 200 (Staff manages orders per SRS 2.5.1)
+
+□ Review
+└ Create Review - No Token (expect 401)
+  POST http://localhost:8080/api/products/10/reviews [401 Unauthorized, 556B, 4ms]
+  √  Status is 401
+
+└ Create Review - Not Eligible (expect 403)
+  POST http://localhost:8080/api/products/10/reviews [403 Forbidden, 561B, 10ms]
+  √  Status is 403 (only reviewable after a COMPLETED order)
+
+└ Create Review - Invalid Rating (expect 400)
+  POST http://localhost:8080/api/products/10/reviews [400 Bad Request, 513B, 12ms]
+  √  Status is 400 (rating must be 1-5)
+
+└ Create Review - Success
+  POST http://localhost:8080/api/products/10/reviews [201 Created, 599B, 31ms]
+  √  Status is 201 with rating 5
+
+└ Create Review - Duplicate (expect 409)
+  POST http://localhost:8080/api/products/10/reviews [409 Conflict, 539B, 11ms]
+  √  Status is 409 (one review per product per customer)
+
+└ Get Reviews For Product (Public)
+  GET http://localhost:8080/api/products/10/reviews [200 OK, 650B, 10ms]
+  √  Status is 200 without any auth header
+  √  Average rating and count reflect the one review
+
+└ Get Reviews - Product Not Found (expect 404)
+  GET http://localhost:8080/api/products/999999999/reviews [404 Not Found, 537B, 8ms]
+  √  Status is 404
+
+□ Statistics
+└ Get Revenue - No Token (expect 401)
+  GET http://localhost:8080/api/admin/statistics/revenue?granularity=DAY [401 Unauthorized, 556B, 4ms]
+  √  Status is 401
+
+└ Get Revenue - Customer Forbidden (expect 403)
+  GET http://localhost:8080/api/admin/statistics/revenue?granularity=DAY [403 Forbidden, 563B, 4ms]
+  √  Status is 403 (statistics are ADMIN only, UC-13)
+
+└ Get Revenue - Admin
+  GET http://localhost:8080/api/admin/statistics/revenue?granularity=DAY [200 OK, 462B, 10ms]
+  √  Status is 200 and returns an array
+
+└ Get Revenue - Empty Date Range (expect 200, no data)
+  GET http://localhost:8080/api/admin/statistics/revenue?granularity=DAY&from=2020-01-01&to=2020-01-02 [200 OK, 416B, 13ms]
+  √  Status is 200 with an empty array (UC-13 "no data" case is not an error)
+
+└ Get Top Products - Admin
+  GET http://localhost:8080/api/admin/statistics/top-products?limit=5 [200 OK, 682B, 9ms]
+  √  Status is 200 and includes orderProductId
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                94 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                94 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 0 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │               120 │                4 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 8.5s                                       │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 21.89kB (approx)                          │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 20ms [min: 3ms, max: 101ms, s.d.: 20ms] │
+└────────────────────────────────────────────────────────────────┘
+
+[31m  # [39m[31m failure        [39m[31m detail                                                                                                                                                                             [39m
+[90m    [39m[90m                [39m[90m                                                                                                                                                                                    [39m
+ 1.  AssertionError  Status is 403                                                                                                                                                                      
+                     expected response to have status code 403 but got 200                                                                                                                              
+                     at assertion:0 in test-script                                                                                                                                                      
+                     inside "Auth / Login - Locked Account (expect 403)"                                                                                                                                
+[90m    [39m[90m                [39m[90m                                                                                                                                                                                    [39m
+ 2.  AssertionError  Error message mentions locked account                                                                                                                                              
+                     the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string 
+                     at assertion:1 in test-script                                                                                                                                                      
+                     inside "Auth / Login - Locked Account (expect 403)"                                                                                                                                
+[90m    [39m[90m                [39m[90m                                                                                                                                                                                    [39m
+ 3.  AssertionError  Status is 409 when the category still has products                                                                                                                                 
+                     expected response to have status code 409 but got 204                                                                                                                              
+                     at assertion:0 in test-script                                                                                                                                                      
+                     inside "Category / Delete Category - Blocked By Products (expect 409)"                                                                                                             
+[90m    [39m[90m                [39m[90m                                                                                                                                                                                    [39m
+ 4.  AssertionError  Status is 204                                                                                                                                                                      
+                     expected response to have status code 204 but got 404                                                                                                                              
+                     at assertion:0 in test-script                                                                                                                                                      
+                     inside "Category / Delete Category - Admin (expect 204)"                                                                                                                           

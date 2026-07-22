@@ -1,0 +1,12 @@
+.gradle
+build/
+.idea
+uploads/
+*.iml
+.vscode
+.git
+docs.txt
+postman/
+Ban_hang_SRS.docx
+Ban_hang_Technical.xlsx
+SRS+Deadline.txt

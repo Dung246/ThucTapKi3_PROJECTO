@@ -1,0 +1,114 @@
+TÀI LIỆU ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS)
+Dự án: Hệ thống Quản lý Bán hàng (Sales Management System)
+Phiên bản: 1.0 | Công nghệ: ReactJS (Frontend) – Java Spring Boot (Backend) – MySQL – Docker
+1. GIỚI THIỆU
+1.1. Mục đích
+Tài liệu mô tả chi tiết yêu cầu chức năng và phi chức năng của Hệ thống Quản lý Bán hàng, làm cơ sở thiết kế, phát triển, kiểm thử và nghiệm thu.
+1.2. Phạm vi dự án
+
+Frontend (Khách hàng): ReactJS — xem, tìm kiếm sản phẩm, đặt hàng, theo dõi đơn hàng.
+Backend/Admin: Java Spring Boot — REST API + giao diện quản trị sản phẩm, đơn hàng, khách hàng, thống kê doanh thu.
+Toàn hệ thống đóng gói bằng Docker, chạy trên localhost.
+
+1.3. Đối tượng sử dụng tài liệu: Giảng viên, thành viên nhóm (BA/PM/Dev/Tester), khách hàng giả định.
+1.4. Từ viết tắt: SRS, BA, PM, UC (Use Case), API, JWT, BE/FE.
+1.5. Công nghệ sử dụng
+
+Frontend: ReactJS, Axios, React Router, TailwindCSS/Bootstrap
+Backend: Java 17, Spring Boot 3, Spring Security (JWT), Spring Data JPA
+CSDL: MySQL 8
+Triển khai: Docker, Docker Compose (localhost)
+Công cụ: Postman, Git/GitHub
+
+2. MÔ TẢ TỔNG QUAN HỆ THỐNG
+2.1. Bối cảnh: Số hóa quy trình bán hàng cho doanh nghiệp bán lẻ vừa/nhỏ — thay thế quản lý thủ công bằng Excel/sổ sách.
+2.2. Đối tượng người dùng: Khách hàng (Customer), Quản trị viên (Admin), Nhân viên (Staff — quyền hạn chế, chủ yếu xử lý đơn hàng).
+2.3. Môi trường vận hành
+
+Docker Compose gồm 3 container: frontend (React), backend (Spring Boot), database (MySQL)
+Cổng: Frontend localhost:3000, Backend API localhost:8080/api, MySQL localhost:3306
+Có thể triển khai lên VPS/Cloud sau này mà không đổi kiến trúc.
+
+3. YÊU CẦU CHỨC NĂNG
+3.1. Module Khách hàng (Frontend)
+
+Đăng ký / Đăng nhập / Đăng xuất
+Xem danh sách sản phẩm theo danh mục, tìm kiếm, lọc theo giá
+Xem chi tiết sản phẩm (ảnh, mô tả, giá, đánh giá)
+Quản lý giỏ hàng (thêm/sửa/xóa)
+Đặt hàng, chọn địa chỉ giao hàng, phương thức thanh toán
+Xem lịch sử & trạng thái đơn hàng
+Đánh giá, bình luận sản phẩm đã mua
+Cập nhật thông tin cá nhân, đổi mật khẩu
+
+3.2. Module Quản trị (Backend/Admin)
+
+Quản lý sản phẩm: thêm/sửa/xóa, tồn kho, hình ảnh
+Quản lý danh mục sản phẩm
+Quản lý đơn hàng: duyệt, cập nhật trạng thái (chờ xử lý/đang giao/hoàn tất/hủy)
+Quản lý khách hàng: xem, khóa/mở tài khoản
+Quản lý tài khoản nội bộ & phân quyền (Admin/Staff)
+Thống kê doanh thu theo ngày/tháng/năm, top sản phẩm bán chạy
+Đăng nhập quản trị riêng, bảo mật JWT + RBAC
+
+4. YÊU CẦU PHI CHỨC NĂNG
+
+Hiệu năng: phản hồi API < 1 giây với dữ liệu demo
+Bảo mật: mật khẩu mã hóa BCrypt, JWT, phân quyền rõ ràng
+Bảo trì: kiến trúc phân lớp (Controller – Service – Repository)
+Triển khai: chỉ cần docker-compose up --build
+Mở rộng: REST API chuẩn, dễ thêm module
+Giao diện: responsive, chạy tốt trên Chrome/Edge/Firefox
+
+5. DANH SÁCH USE CASE
+MãTên Use CaseActorMô tảUC-01Đăng ký tài khoảnKhách hàngTạo tài khoản mới bằng email/SĐTUC-02Đăng nhậpTất cảXác thực JWT, phân quyền theo vai tròUC-03Tìm kiếm/lọc sản phẩmKhách hàngTheo tên, danh mục, khoảng giáUC-04Xem chi tiết sản phẩmKhách hàngẢnh, mô tả, giá, đánh giáUC-05Quản lý giỏ hàngKhách hàngThêm/xóa/sửa số lượngUC-06Đặt hàng & thanh toánKhách hàngTạo đơn từ giỏ hàngUC-07Theo dõi đơn hàngKhách hàngXem trạng thái, lịch sửUC-08Đánh giá sản phẩmKhách hàngViết đánh giá, chấm điểmUC-09Quản lý sản phẩmAdminThêm/sửa/xóa, tồn khoUC-10Quản lý đơn hàngAdmin, StaffDuyệt, cập nhật trạng tháiUC-11Quản lý khách hàngAdminXem, khóa/mở tài khoảnUC-12Quản lý tài khoản & phân quyềnAdminThêm/sửa nhân viên, gán vai tròUC-13Thống kê & báo cáo doanh thuAdminTheo ngày/tháng/năm
+6. ĐẶC TẢ CHI TIẾT (3 use case quan trọng)
+UC-06: Đặt hàng & Thanh toán
+
+Actor: Khách hàng | Điều kiện: đã đăng nhập, có sản phẩm trong giỏ
+Luồng chính: Vào giỏ hàng → chọn "Đặt hàng" → nhập địa chỉ → chọn thanh toán (COD/chuyển khoản) → xác nhận → hệ thống tạo đơn, trừ tồn kho, gửi email
+Ngoại lệ: hết hàng → loại khỏi giỏ; mất kết nối → lưu đơn ở trạng thái "Chờ xử lý"
+Kết quả: đơn hàng mới xuất hiện trong danh sách quản lý của Admin
+
+UC-09: Quản lý sản phẩm
+
+Actor: Admin | Điều kiện: đã đăng nhập trang quản trị
+Luồng chính: Vào "Quản lý sản phẩm" → thêm/sửa/xóa → nhập tên/danh mục/giá/tồn/ảnh → lưu
+Ngoại lệ: trùng tên → cảnh báo; xóa sản phẩm đã có đơn hàng → chỉ ẩn (soft delete)
+Kết quả: danh sách cập nhật ngay trên Frontend
+
+UC-10: Quản lý đơn hàng
+
+Actor: Admin, Staff | Điều kiện: có đơn hàng "Chờ xử lý"
+Luồng chính: Xem danh sách → chọn đơn → cập nhật trạng thái → lưu lịch sử thay đổi
+Ngoại lệ: hủy sau khi đã giao → từ chối, ghi chú lý do
+Kết quả: trạng thái cập nhật, khách hàng nhận thông báo
+
+7. THIẾT KẾ CƠ SỞ DỮ LIỆU (ERD mô tả)
+users: id (PK), full_name, email (unique), password (BCrypt), phone, role (CUSTOMER/STAFF/ADMIN), status, created_at
+categories: id (PK), name, description
+products: id (PK), name, category_id (FK), price, quantity, image_url, description, status
+carts/cart_items: id (PK), user_id (FK), product_id (FK), quantity
+orders: id (PK), user_id (FK), total_amount, status (PENDING/CONFIRMED/SHIPPING/COMPLETED/CANCELLED), shipping_address, payment_method, created_at
+order_details: id (PK), order_id (FK), product_id (FK), quantity, unit_price
+reviews: id (PK), product_id (FK), user_id (FK), rating (1-5), comment, created_at
+8. KIẾN TRÚC HỆ THỐNG & TRIỂN KHAI
+
+Kiến trúc 3 lớp, Docker Compose gồm 3 service:
+
+Frontend: React build qua Nginx, cổng 3000:80
+Backend: Spring Boot REST API, cổng 8080:8080
+Database: MySQL 8, cổng 3306:3306, volume persistent
+
+
+Luồng: React (client) → HTTP/JSON → Spring Boot API → JPA/Hibernate → MySQL. Xác thực qua JWT trong header Authorization.
+Cấu trúc thư mục: /backend (Dockerfile riêng), /frontend (Dockerfile riêng), /docker-compose.yml liên kết 3 service. Chạy toàn bộ bằng: docker-compose up --build
+
+9. RỦI RO DỰ ÁN
+
+Mới học Spring Boot → ưu tiên chức năng lõi (CRUD, đăng nhập) trước, tính năng nâng cao (đánh giá, thống kê) làm sau.
+Lần đầu dùng Docker → thử docker-compose up sớm ngay từ ngày 1 để phát hiện lỗi cổng/kết nối.
+
+
+BẢNG PHÂN CHIA CÔNG VIỆC THEO NGÀY (10 ngày: 9 ngày chính + 1 dự phòng)
+NgàyMãCông việcLoạiNgười phụ tráchTiến độ1BE-01Khởi tạo Spring Boot, cấu hình Docker Compose (MySQL), thiết kế ERD chi tiếtBackendDev BE0%1BE-02Tạo entity Users, Roles, Categories, ProductsBackendDev BE0%1TEST-01Chuẩn bị Postman Collection khungTestDev BE0%2BE-03API Đăng ký/Đăng nhập (JWT), phân quyền RoleBackendDev BE0%2BE-04API CRUD Danh mục sản phẩmBackendDev BE0%2TEST-02Test API Auth + phân quyềnTestDev BE0%3BE-05API CRUD Sản phẩm (tìm kiếm/lọc)BackendDev BE0%3BE-06API Giỏ hàngBackendDev BE0%3TEST-03Test API sản phẩm + giỏ hàngTestDev BE0%4BE-07API Đơn hàng (tạo đơn, cập nhật trạng thái, trừ tồn kho)BackendDev BE0%4BE-08API Quản lý khách hàng + tài khoản nội bộBackendDev BE0%4TEST-04Test API đơn hàng (luồng chính + lỗi)TestDev BE0%5BE-09API Thống kê doanh thu + Đánh giá sản phẩmBackendDev BE0%5BE-10Dockerfile Backend, hoàn thiện docker-compose (BE+DB)BackendDev BE0%5TEST-05Test tích hợp toàn bộ APITestDev BE0%6FE-01Setup ReactJS, layout chung, trang Đăng ký/Đăng nhậpFrontendDev FE0%6FE-02Trang danh sách + chi tiết sản phẩmFrontendDev FE0%7FE-03Trang giỏ hàng, đặt hàng, thanh toánFrontendDev FE0%7FE-04Trang theo dõi đơn hàng, đánh giá sản phẩmFrontendDev FE0%7TEST-06Test luồng đặt hàng end-to-end trên UITestDev FE0%8FE-05Trang Admin Dashboard (sản phẩm/đơn hàng/khách hàng)FrontendDev FE0%8FE-06Trang thống kê + Dockerfile FE + tích hợp docker-compose 3 serviceFrontendDev FE0%8TEST-07Test tích hợp toàn hệ thống (chạy docker-compose up)TestCả nhóm0%9DOC-01Hoàn thiện SRS, sửa lỗi phát sinhDocsCả nhóm0%9DOC-02Viết BÁO CÁO BÀI TẬP LỚNDocsCả nhóm0%9DOC-03Demo thử, chuẩn bị thuyết trìnhDocsCả nhóm0%10BUF-01Ngày dự phòng: xử lý phát sinh, hoàn thiện tài liệu/slideDự phòngCả nhóm—
